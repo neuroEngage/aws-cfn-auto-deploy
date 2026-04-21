@@ -1,0 +1,21 @@
+name: Deploy CloudFormation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy CloudFormation
+        run: |
+          aws cloudformation deploy \
+            --template-file template.yaml \
+            --stack-name my-free-tier-stack \
+            --capabilities CAPABILITY_IAM
