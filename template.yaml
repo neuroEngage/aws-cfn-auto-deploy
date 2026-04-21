@@ -1,10 +1,10 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Free Tier Infra - S3 + EC2 using existing LabRole
+Description: Free Tier Infra - S3 + EC2 (Lab Safe)
 
 Parameters:
   KeyName:
-    Description: EC2 Key Pair
     Type: AWS::EC2::KeyPair::KeyName
+    Description: Existing EC2 Key Pair
 
 Resources:
 
@@ -14,7 +14,7 @@ Resources:
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow SSH
+      GroupDescription: Allow SSH access
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -35,8 +35,10 @@ Resources:
           Value: FreeTierEC2
 
 Outputs:
-  InstanceId:
-    Value: !Ref MyEC2Instance
+  InstancePublicIP:
+    Description: Public IP of EC2
+    Value: !GetAtt MyEC2Instance.PublicIp
 
   BucketName:
+    Description: Created S3 bucket
     Value: !Ref MyS3Bucket
