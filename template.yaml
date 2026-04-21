@@ -1,18 +1,15 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: Free Tier Infra - S3 + EC2 + IAM Role
+Description: Lab-safe Infra
 
 Parameters:
   KeyName:
     Type: AWS::EC2::KeyPair::KeyName
-    Description: Name of an existing EC2 KeyPair
 
 Resources:
 
-  # S3 Bucket (auto-generated name → no conflict)
   MyS3Bucket:
     Type: AWS::S3::Bucket
 
-  # IAM Role for EC2
   EC2Role:
     Type: AWS::IAM::Role
     Properties:
@@ -24,11 +21,9 @@ Resources:
               Service: ec2.amazonaws.com
             Action: sts:AssumeRole
 
-  # IAM Policy (limited S3 access → safer for lab)
-  S3AccessPolicy:
+  S3Policy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: S3AccessPolicy
       Roles:
         - !Ref EC2Role
       PolicyDocument:
@@ -41,39 +36,28 @@ Resources:
               - s3:PutObject
             Resource: "*"
 
-  # Instance Profile (required to attach role to EC2)
   InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties:
       Roles:
         - !Ref EC2Role
 
-  # Security Group (allow SSH)
   MySecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Allow SSH access
+      GroupDescription: SSH access
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
           ToPort: 22
           CidrIp: 0.0.0.0/0
 
-  # EC2 Instance (Free Tier)
   MyEC2Instance:
     Type: AWS::EC2::Instance
     Properties:
       InstanceType: t2.micro
       KeyName: !Ref KeyName
-      ImageId: ami-0c02fb55956c7d316   # Amazon Linux (us-east-1)
+      ImageId: ami-0c02fb55956c7d316
       IamInstanceProfile: !Ref InstanceProfile
       SecurityGroupIds:
         - !Ref MySecurityGroup
-      Tags:
-        - Key: Name
-          Value: FreeTierEC2
-
-Outputs:
-  InstancePublicIP:
-    Description: Public IP of EC2
-    Value: !GetAtt MyEC2Instance.PublicIp
